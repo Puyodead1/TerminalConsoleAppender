@@ -145,7 +145,7 @@ public final class MinecraftFormattingConverter extends LogEventPatternConverter
         }
 
         String content = toAppendTo.substring(start);
-        format(content, toAppendTo, start, ansi && TerminalConsoleAppender.isAnsiSupported());
+        format(content, toAppendTo, start, ansi);
     }
 
     static void format(String s, StringBuilder result, int start, boolean ansi) {
