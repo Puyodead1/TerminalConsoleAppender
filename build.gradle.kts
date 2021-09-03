@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    `maven`
+    `maven-publish`
     id("io.codearte.nexus-staging") version "0.30.0"
     id("org.cadixdev.licenser") version "0.6.1"
 }
@@ -77,8 +77,62 @@ val isSnapshot = version.toString().endsWith("-SNAPSHOT")
 
 
 
-tasks.withType<Sign> {
-    onlyIf { !isSnapshot }
+publishing {
+    publications {
+        register<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifactId = project.name.toLowerCase()
+
+            pom {
+                val url: String by project
+                name(project.name)
+                description(project.description!!)
+                url(url)
+
+                scm {
+                    url(url)
+                    connection("scm:git:$url.git")
+                    developerConnection.set(connection)
+                }
+
+                issueManagement {
+                    system("GitHub Issues")
+                    url("$url/issues")
+                }
+
+                developers {
+                    developer {
+                        id("minecrell")
+                        name("Minecrell")
+                        email("minecrell@minecrell.net")
+                    }
+                }
+
+                licenses {
+                    license {
+                        name("MIT License")
+                        url("https://opensource.org/licenses/MIT")
+                        distribution("repo")
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        val sonatypeUsername: String? by project
+        val sonatypePassword: String? by project
+        if (sonatypeUsername != null && sonatypePassword != null) {
+            val url = if (isSnapshot) "https://oss.sonatype.org/content/repositories/snapshots/"
+            else "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            maven(url) {
+                credentials {
+                    username = sonatypeUsername
+                    password = sonatypePassword
+                }
+            }
+        }
+    }
 }
 
 operator fun Property<String>.invoke(v: String) = set(v)
